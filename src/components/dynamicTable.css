@@ -1,0 +1,29 @@
+/* styles.css */
+
+/* General page styling */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  /* Container for the whole page */
+  .container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  /* Heading styling */
+  h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 24px;
+  }
+  
+  /* Form container with spacing at the bottom */
+  .form-container {
+    margin-bottom: 40px; /* Space between form and table */
+  }
