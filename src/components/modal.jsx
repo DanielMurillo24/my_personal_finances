@@ -13,7 +13,7 @@ export const Modal = ({ isOpen, description, amount, setDescription, setAmount, 
          <div style={modalContentStyle}>
          <h2>Editing...</h2>
       <form onSubmit={onSubmit} className="form-container">
-        <div className="row">
+        <div className="row g-2">
           <div className="col-md-4">
             <input
               type="text"
@@ -33,11 +33,11 @@ export const Modal = ({ isOpen, description, amount, setDescription, setAmount, 
             />
           </div>
           
-          <div className="col-md-2">
+          <div className="col-md-2 d-grid">
             <button type="submit" className="btn btn-outline-primary">Save</button>
           </div>
           
-          <div className="col-md-2">
+          <div className="col-md-2 d-grid">
             <button type="button" onClick={onClose} className="btn btn-outline-danger">Cancel</button>
           </div>
           

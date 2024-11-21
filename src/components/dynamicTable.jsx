@@ -1,49 +1,47 @@
-import { useState } from "react"
+import { useState } from "react";
 import { Modal } from "./modal";
 import "./dynamicTable.css";
-
+import { Input } from "./Input";
 
 export const DynamicTable = () => {
+  const [items, setItems] = useState([]);
+  const [formValues, setFormValues] = useState({
+    description: "",
+    amount: "",
+  });
 
-  const[items, setItems] = useState([])
-  const[description, setDescription] = useState('')
-  const[amount, setAmount] = useState('')
+  const { description, amount } = formValues;
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentRow, setCurrentRow] = useState(null);
 
-  const [modalDescription, setModalDescription] = useState('');
-  const [modalAmount, setModalAmount] = useState('');
+  const [modalDescription, setModalDescription] = useState("");
+  const [modalAmount, setModalAmount] = useState("");
 
   const onSubmit = (event) => {
-    event.preventDefault()
+    event.preventDefault();
 
     const convertedAmount = parseInt(amount, 10);
-    
-    if (description && amount){
-        setItems([...items, {description, amount: convertedAmount }]);
-        setDescription('');
-        setAmount('');
-    } 
-  }
+
+    if (description && amount) {
+      setItems([...items, { description, amount: convertedAmount }]);
+      setFormValues({
+        description: "",
+        amount: "",
+      });
+    }
+  };
 
   const calculateAmount = () => {
     return items.reduce((accumulator, item) => accumulator + item.amount, 0);
-  }
-  
-  // Función para abrir el modal con la fila seleccionada
-  const handleEditClick = (index) => {
-    const item = items[index];
-    setCurrentRow(index);
-    setModalDescription(item.description);
-    setModalAmount(item.amount);
-    setIsModalOpen(true);
   };
 
+  //----------------------------------Funciones del Modal -------------------------------
   // Función para cerrar el modal
   const closeModal = () => {
     setIsModalOpen(false);
-    setModalDescription('');
-    setModalAmount('');
+    setModalDescription("");
+    setModalAmount("");
   };
 
   // Función para guardar los cambios en la fila editada
@@ -54,106 +52,114 @@ export const DynamicTable = () => {
       description: modalDescription,
       amount: parseInt(modalAmount, 10),
     };
-    setItems(updatedItems);  // Actualiza las filas
-    closeModal();  // Cierra el modal
+    setItems(updatedItems); // Actualiza las filas
+    closeModal(); // Cierra el modal
   };
 
+  //---------------------------Termina Funciones del Modal --------------------------------
+  // Función para abrir el modal con la fila seleccionada
+  const handleEditClick = (index) => {
+    const item = items[index];
+    setCurrentRow(index);
+    setModalDescription(item.description);
+    setModalAmount(item.amount);
+    setIsModalOpen(true);
+  };
 
-  //Edita la columna( se reemplaza por modal )
-  const editItem = (index) => {
-    const newDescription = prompt('Enter New Description:', items[index].description);
-    const newAmount = prompt('Enter New Amount:', items[index].amount);
-    const newItems = [...items];
-    newItems[index] = {description: newDescription, amount: newAmount};
-    setItems(newItems);  
-  }
-
-
-  const deleteItem= (index) => {
+  const deleteItem = (index) => {
     const newItems = items.filter((_, i) => i !== index);
     setItems(newItems);
-  }
+  };
+
+  const onInputChange = (name, value) => {
+    setFormValues({
+      ...formValues,
+      [name]: value,
+    });
+  };
 
   return (
     <div className="container">
-  
-        <form onSubmit = { onSubmit } className="form-container">
-            <div className="row">
-                <div className="col-md-2">
-                    <input 
-                        type="text"
-                        className="form-control"
-                        placeholder="Description"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                    />
-                    </div>
-                <div className="col-md-2">
-                    <input 
-                        type="number"
-                        className="form-control"
-                        placeholder="Amount"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                    />
-                </div>
-                <div className="col">
-                    <button type="submit" className="btn btn-outline-success">Add</button>
-                </div>
-            </div>
-        </form>
-
-            <table className="table table-striped">
-                <thead className="table-dark">
-                    <tr>
-                        <th scope="col">
-                            Description
-                        </th>
-                        <th scope="col">
-                            Amount
-                        </th>
-                        <th scope="col">
-                            Edit
-                        </th>
-                        <th scope="col">
-                            Delete
-                        </th>
-                    </tr>
-                </thead>
-                <tbody className="table-group-divider">
-                    {
-                        items.map((item, index) => (
-                            <tr key={index}>
-                                <td scope="row">{item.description}</td>
-                                <td>{item.amount}</td>
-                                <td>
-                                    <button type="button" className="btn btn-outline-secondary" onClick={() => handleEditClick(index)}>Edit</button>
-                                </td>
-                                <td>
-                                    <button type="button" className="btn btn-outline-danger" onClick={() => deleteItem(index)}>Delete</button>
-                                </td>
-                            </tr>                         
-                        ))
-                    }
-                            <tr>
-                                <td>Total</td>
-                                <td>{ calculateAmount() }</td>
-                                <td colSpan="2"></td>
-                            </tr>
-                </tbody>
-            </table>
-
-            <Modal
-                isOpen={isModalOpen}
-                description={modalDescription}
-                amount={modalAmount}
-                setDescription={setModalDescription} // Usa los setters del modal
-                setAmount={setModalAmount}
-                onClose={closeModal}
-                onSave={handleSave}
-             />
-
-
+      <form onSubmit={onSubmit} className="form-container">
+        <div className="row g-2">
+          <div className="col-12 col-md-2">
+            <Input
+              className="form-control"
+              type="text"
+              placeholder="Description"
+              value={description}
+              onChange={(value) => onInputChange("description", value)}
+            />
+          </div>
+          <div className="col-12 col-md-2">
+            <Input
+              className="form-control"
+              type="number"
+              placeholder="Amount"
+              value={amount}
+              onChange={(value) => onInputChange("amount", value)}
+            />
+          </div>
+          <div className="col-12 col-md-2 d-grid">
+            <button type="submit" className="btn btn-outline-success">
+              Add
+            </button>
+          </div>
         </div>
-  )
-}
+      </form>
+
+      <table className="table table-striped">
+        <thead className="table-dark">
+          <tr>
+            <th scope="col">Description</th>
+            <th scope="col">Amount</th>
+            <th scope="col" className="text-nowrap text-center col-auto ">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody className="table-group-divider">
+          {items.map((item, index) => (
+            <tr key={index}>
+              <td scope="row">{item.description}</td>
+              <td>{item.amount}</td>
+              <td className="text-nowrap text-center col-auto">
+                <div className="d-inline-flex gap-2">
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary btn-sm"
+                    onClick={() => handleEditClick(index)}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-outline-danger btn-sm"
+                    onClick={() => deleteItem(index)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ))}
+          <tr>
+            <td>Total</td>
+            <td>{calculateAmount()}</td>
+            <td colSpan="2"></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <Modal
+        isOpen={isModalOpen}
+        description={modalDescription}
+        amount={modalAmount}
+        setDescription={setModalDescription} // Usa los setters del modal
+        setAmount={setModalAmount}
+        onClose={closeModal}
+        onSave={handleSave}
+      />
+    </div>
+  );
+};
