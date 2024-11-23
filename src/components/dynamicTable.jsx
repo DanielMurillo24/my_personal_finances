@@ -1,40 +1,29 @@
 import { useState } from "react";
 import { Modal } from "./modal";
 import "./dynamicTable.css";
-import { Input } from "./Input";
+import { FormAddDesc } from "./formAddDesc";
+import { useForm } from "../hooks/useForm";
 
 export const DynamicTable = () => {
-  const [items, setItems] = useState([]);
-  const [formValues, setFormValues] = useState({
+  const {
+    formState,
+    onSubmit,
+    onInputChange,
+    updateItem,
+    deleteItem,
+    description,
+    amount,
+    items,
+  } = useForm({
     description: "",
     amount: "",
   });
-
-  const { description, amount } = formValues;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentRow, setCurrentRow] = useState(null);
 
   const [modalDescription, setModalDescription] = useState("");
   const [modalAmount, setModalAmount] = useState("");
-
-  const onSubmit = (event) => {
-    event.preventDefault();
-
-    const convertedAmount = parseInt(amount, 10);
-
-    if (description && amount) {
-      setItems([...items, { description, amount: convertedAmount }]);
-      setFormValues({
-        description: "",
-        amount: "",
-      });
-    }
-  };
-
-  const calculateAmount = () => {
-    return items.reduce((accumulator, item) => accumulator + item.amount, 0);
-  };
 
   //----------------------------------Funciones del Modal -------------------------------
   // Función para cerrar el modal
@@ -46,17 +35,14 @@ export const DynamicTable = () => {
 
   // Función para guardar los cambios en la fila editada
   const handleSave = () => {
-    const updatedItems = [...items]; // Crea una copia del array de items
-    updatedItems[currentRow] = {
-      ...updatedItems[currentRow], // Copia el ítem actual
+    const updatedItems = {
       description: modalDescription,
       amount: parseInt(modalAmount, 10),
     };
-    setItems(updatedItems); // Actualiza las filas
+    updateItem(currentRow, updatedItems);
     closeModal(); // Cierra el modal
   };
 
-  //---------------------------Termina Funciones del Modal --------------------------------
   // Función para abrir el modal con la fila seleccionada
   const handleEditClick = (index) => {
     const item = items[index];
@@ -65,48 +51,24 @@ export const DynamicTable = () => {
     setModalAmount(item.amount);
     setIsModalOpen(true);
   };
+  //---------------------------Termina Funciones del Modal --------------------------------
 
-  const deleteItem = (index) => {
-    const newItems = items.filter((_, i) => i !== index);
-    setItems(newItems);
+  const handleDeleteItem = (index) => {
+    deleteItem(index);
   };
 
-  const onInputChange = (name, value) => {
-    setFormValues({
-      ...formValues,
-      [name]: value,
-    });
+  const calculateAmount = () => {
+    return items.reduce((accumulator, item) => accumulator + item.amount, 0);
   };
 
   return (
     <div className="container">
-      <form onSubmit={onSubmit} className="form-container">
-        <div className="row g-2">
-          <div className="col-12 col-md-2">
-            <Input
-              className="form-control"
-              type="text"
-              placeholder="Description"
-              value={description}
-              onChange={(value) => onInputChange("description", value)}
-            />
-          </div>
-          <div className="col-12 col-md-2">
-            <Input
-              className="form-control"
-              type="number"
-              placeholder="Amount"
-              value={amount}
-              onChange={(value) => onInputChange("amount", value)}
-            />
-          </div>
-          <div className="col-12 col-md-2 d-grid">
-            <button type="submit" className="btn btn-outline-success">
-              Add
-            </button>
-          </div>
-        </div>
-      </form>
+      <FormAddDesc
+        onSubmit={onSubmit}
+        onInputChange={onInputChange}
+        description={description}
+        amount={amount}
+      />
 
       <table className="table table-striped">
         <thead className="table-dark">
@@ -135,7 +97,7 @@ export const DynamicTable = () => {
                   <button
                     type="button"
                     className="btn btn-outline-danger btn-sm"
-                    onClick={() => deleteItem(index)}
+                    onClick={() => handleDeleteItem(index)}
                   >
                     Delete
                   </button>

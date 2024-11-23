@@ -1,6 +1,5 @@
 export const Input = ({type, value = '', placeholder, onChange, className}) => {
 
-
   return (
     <input
     className={ className }
