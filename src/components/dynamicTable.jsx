@@ -1,8 +1,10 @@
-import { useState } from "react";
 import { Modal } from "./modal";
-import "./dynamicTable.css";
-import { FormAddDesc } from "./formAddDesc";
+import { Table } from "./table";
+import { useState } from "react";
 import { useForm } from "../hooks/useForm";
+import { FormAddDesc } from "./formAddDesc";
+
+import "./dynamicTable.css";
 
 export const DynamicTable = () => {
   const {
@@ -53,14 +55,6 @@ export const DynamicTable = () => {
   };
   //---------------------------Termina Funciones del Modal --------------------------------
 
-  const handleDeleteItem = (index) => {
-    deleteItem(index);
-  };
-
-  const calculateAmount = () => {
-    return items.reduce((accumulator, item) => accumulator + item.amount, 0);
-  };
-
   return (
     <div className="container">
       <FormAddDesc
@@ -70,48 +64,11 @@ export const DynamicTable = () => {
         amount={amount}
       />
 
-      <table className="table table-striped">
-        <thead className="table-dark">
-          <tr>
-            <th scope="col">Description</th>
-            <th scope="col">Amount</th>
-            <th scope="col" className="text-nowrap text-center col-auto ">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody className="table-group-divider">
-          {items.map((item, index) => (
-            <tr key={index}>
-              <td scope="row">{item.description}</td>
-              <td>{item.amount}</td>
-              <td className="text-nowrap text-center col-auto">
-                <div className="d-inline-flex gap-2">
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary btn-sm"
-                    onClick={() => handleEditClick(index)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-outline-danger btn-sm"
-                    onClick={() => handleDeleteItem(index)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </td>
-            </tr>
-          ))}
-          <tr>
-            <td>Total</td>
-            <td>{calculateAmount()}</td>
-            <td colSpan="2"></td>
-          </tr>
-        </tbody>
-      </table>
+      <Table
+        items={items}
+        onEdit={handleEditClick}
+        onDelete={(index) => deleteItem(index)}
+      />
 
       <Modal
         isOpen={isModalOpen}

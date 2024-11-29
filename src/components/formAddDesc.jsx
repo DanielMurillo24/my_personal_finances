@@ -9,7 +9,6 @@ export const FormAddDesc = ({onSubmit, onInputChange, description, amount}) => {
                   className="form-control"
                   type="text"
                   placeholder="Description"
-                  
                   value={description}
                   onChange={(value) => onInputChange("description", value)}
                 />
@@ -19,7 +18,6 @@ export const FormAddDesc = ({onSubmit, onInputChange, description, amount}) => {
                   className="form-control"
                   type="number"
                   placeholder="Amount"
-                  
                   value={amount}
                   onChange={(value) => onInputChange("amount", value)}
                 />
