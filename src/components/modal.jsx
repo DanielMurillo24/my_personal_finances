@@ -1,21 +1,42 @@
 import "./modal.css";
 import { Input } from "./Input";
+import { useEffect, useState } from "react";
 
 export const Modal = ({
   isOpen,
   description,
   amount,
-  setDescription,
-  setAmount,
   onClose,
   onSave,
 }) => {
-  if (!isOpen) return null;
 
+  const [modalState, setModalState] = useState({
+    description: "",
+    amount: "",
+  });
+
+  useEffect(() => {
+    if (isOpen) {
+      setModalState({
+        description: description || "",
+        amount: amount || "",
+      });
+    }
+  }, [isOpen, description, amount]);
+  
+  const onInputChange = (name, value) => {
+    setModalState({
+      ...modalState,
+      [name]: value,
+    });
+  };
+  
   const onSubmit = (event) => {
     event.preventDefault(); // Prevent page refresh on form submit
-    onSave(); // Call the save function passed as a prop
+    onSave(modalState); // Send the updated values back to the parent
   };
+  
+  if (!isOpen) return null;
 
   return (
     <div className="modal-overlay">
@@ -28,8 +49,8 @@ export const Modal = ({
                 className="form-control"
                 type="text"
                 placeholder="Description"
-                value={description}
-                onChange={(value) => setDescription(value)}
+                value={modalState.description}
+                onChange={(value) => onInputChange("description", value)}
               />
             </div>
             <div className="col-md-4">
@@ -37,8 +58,8 @@ export const Modal = ({
                 className="form-control"
                 type="number"
                 placeholder="Amount"
-                value={amount}
-                onChange={(value) => setAmount(value)}
+                value={modalState.amount}
+                onChange={(value) => onInputChange("amount", value)}
               />
             </div>
 

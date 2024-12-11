@@ -24,24 +24,19 @@ export const DynamicTable = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentRow, setCurrentRow] = useState(null);
 
-  const [modalDescription, setModalDescription] = useState("");
-  const [modalAmount, setModalAmount] = useState("");
-
   //----------------------------------Funciones del Modal -------------------------------
-  // Función para cerrar el modal
+  // Close Modal
   const closeModal = () => {
     setIsModalOpen(false);
-    setModalDescription("");
-    setModalAmount("");
   };
 
   // Función para guardar los cambios en la fila editada
-  const handleSave = () => {
-    const updatedItems = {
-      description: modalDescription,
-      amount: parseInt(modalAmount, 10),
+  const handleSave = (updatedItem) => {
+    const updateRow = {
+      description: updatedItem.description,
+      amount: parseInt(updatedItem.amount, 10),
     };
-    updateItem(currentRow, updatedItems);
+    updateItem(currentRow, updateRow);
     closeModal(); // Cierra el modal
   };
 
@@ -49,8 +44,6 @@ export const DynamicTable = () => {
   const handleEditClick = (index) => {
     const item = items[index];
     setCurrentRow(index);
-    setModalDescription(item.description);
-    setModalAmount(item.amount);
     setIsModalOpen(true);
   };
   //---------------------------Termina Funciones del Modal --------------------------------
@@ -72,10 +65,8 @@ export const DynamicTable = () => {
 
       <Modal
         isOpen={isModalOpen}
-        description={modalDescription}
-        amount={modalAmount}
-        setDescription={setModalDescription} // Usa los setters del modal
-        setAmount={setModalAmount}
+        description={items[currentRow]?.description || ""}
+        amount={items[currentRow]?.amount || ""}
         onClose={closeModal}
         onSave={handleSave}
       />
