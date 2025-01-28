@@ -1,14 +1,25 @@
-import { Navigate, Route, Routes } from "react-router-dom"
-import { BudgetPage } from "../budget/pages/budgetPage"
-import { LoginPage } from "../auth/pages/LoginPage"
+import { Navigate, Route, Routes, useLocation} from "react-router-dom"
+import { BudgetPage } from "../budget";
+import { LoginPage, LoginRoutes } from "../auth";
+import { HomePage } from "../home";
+import { Navbar } from "../layout";
 
 export const AppRouter = () => {
+
+  const location = useLocation();
+  const showNavBar = location.pathname !== '/login'
+
   return (
     <>
+      
+      {showNavBar && <Navbar />}
+      
+
       <Routes> 
+        <Route path="home" element={<HomePage/>}/>
         <Route path="budget" element={<BudgetPage/>}/>
-        <Route path="login" element={<LoginPage/>}/>
-        <Route path="/" element={<Navigate to="/budget"/>}/>
+        <Route path="/" element={<Navigate to="/home"/>}/>
+        <Route path="/*" element={<LoginRoutes/>}/>
       </Routes>
     </>
   )

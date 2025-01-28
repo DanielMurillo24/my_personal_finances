@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { DynamicTable } from "../components/dynamicTable";
+
+import { DynamicTable } from "../components";
 
 export const BudgetPage = () => {
 
