@@ -46,8 +46,9 @@ export const Navbar = () => {
                         Daniel Murillo
                     </span>
 
-                    <button className='nav-item nav-link btn' onClick={onLogout}>
-                        Logout
+                    <button className='btn btn-outline-danger' onClick={onLogout}>
+                        <i className='fas fa-sign-out-alt'></i>
+                        <span>Logout</span>
                     </button>
                 </ul>
             </div>
