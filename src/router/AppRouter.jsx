@@ -1,35 +1,40 @@
-import { Navigate, Route, Routes, useLocation} from "react-router-dom"
-import { BudgetPage } from "../budget";
-import { LoginPage, LoginRoutes } from "../auth";
-import { HomePage } from "../home";
+import { Navigate, Route, Routes } from "react-router-dom";
+import { useEffect } from "react";
 import { Navbar } from "../layout";
-//import { getEnvVariables} from '../helpers/getEnvVariables'
+import { HomePage } from "../home";
+import { LoginPage } from "../auth";
+import { BudgetPage } from "../budget";
+import { useAuthStore } from "../hooks";
 
 export const AppRouter = () => {
+  const { status, checkAuthToken } = useAuthStore();
 
-  const location = useLocation();
-  const showNavBar = location.pathname !== '/login'
-  const authStatus = 'not-authenticated'; // 'not-authenticated', 'authenticated'
+  useEffect(() => {
+    checkAuthToken();
+  }, []);
 
-//  console.log( getEnvVariables() );
+  if (status === "checking") {
+    return <h3>Cargando...</h3>;
+  }
 
   return (
     <>
-      
-      {showNavBar && <Navbar />}
-      
-      <Routes>
-        {
-          (authStatus === 'not-authenticated')
-             ? <Route path="/*" element={<LoginRoutes/>}/>
-             :<>
-                <Route path="home" element={<HomePage/>}/>
-                <Route path="budget" element={<BudgetPage/>}/>
-                <Route path="/" element={<Navigate to="/home"/>}/>
-              </>   
-        }
+      {status === "authenticated" && <Navbar />}
 
+      <Routes>
+        {status === "non-authenticated" ? (
+          <>
+            <Route path="/auth/*" element={<LoginPage />} />
+            <Route path="/*" element={<Navigate to="/auth/login" />} />
+          </>
+        ) : (
+          <>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/budget" element={<BudgetPage />} />
+            <Route path="/*" element={<Navigate to="/" />} />
+          </>
+        )}
       </Routes>
     </>
-  )
-}
+  );
+};
