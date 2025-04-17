@@ -1,18 +1,17 @@
 import { useState } from "react";
 
-export const useForm = (initialForm = {}) => {
-  const [formState, setFormState] = useState(initialForm);
-  const [items, setItems] = useState([]);
+export const useForm = (initialForm = {}, onAddRecord) => {
 
-  const onSubmit = (event) => {
+  const [formState, setFormState] = useState(initialForm);
+
+  const onSubmit = async (event) => {
     event.preventDefault();
 
     const { description, amount } = formState;
-
     const convertedAmount = parseInt(amount, 10);
 
-    if (description && amount) {
-      setItems([...items, { description, amount: convertedAmount }]);
+    if (description && amount && onAddRecord) {
+      await onAddRecord(description, convertedAmount);
       setFormState({
         description: "",
         amount: "",
@@ -27,24 +26,10 @@ export const useForm = (initialForm = {}) => {
     });
   };
 
-  const updateItem = (index, newItem) => {
-    const updatedItems = [...items];
-    updatedItems[index] = newItem;
-    setItems(updatedItems);
-  };
-
-  const deleteItem = (index) => {
-    const updatedItems = items.filter((_, i) => i !== index);
-    setItems(updatedItems); // Borra el ítem seleccionado
-  };
-
   return {
     ...formState,
     formState,
-    items,
     onSubmit,
     onInputChange,
-    updateItem,
-    deleteItem,
   };
 };
