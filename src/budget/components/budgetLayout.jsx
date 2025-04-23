@@ -5,16 +5,16 @@ import {
   FormAddDesc,
   BudgetModal,
   BudgetSummaryCard,
-} from "./";
+} from ".";
 import { useBudgetStore } from "../../hooks";
 import { useEffect, useState } from "react";
 import { useForm } from "../hooks/useForm";
 import Swal from "sweetalert2";
 import { Trash2 } from 'lucide-react';
 
-import "./dynamicTable.css";
+import "./budgetLayout.css";
 
-export const DynamicTable = () => {
+export const BudgetLayout = () => {
   const {
     budget,
     records,

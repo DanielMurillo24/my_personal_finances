@@ -1,11 +1,11 @@
 
-import { DynamicTable } from "../components";
+import { BudgetLayout } from "../components";
 
 export const BudgetPage = () => {
 
   return(
   <>
-    <DynamicTable/>
+    <BudgetLayout/>
   </>
   )
 }
