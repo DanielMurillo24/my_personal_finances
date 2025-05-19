@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux"
-import { loadingRecords, onGetRecords, onClearBudget, onUpdateRecord } from '../storage';
+import { loadingRecords, onGetRecords, onClearBudget, onUpdateRecord, onError, onclearError } from '../storage';
 import financeApi from "../apis/financeApi";
 
 
@@ -15,14 +15,20 @@ export const useBudgetStore = () => {
         dispatch( loadingRecords() );
         try {
             const { data } = await financeApi.get('/budget');
-            console.log('API response:', data);
             dispatch( onGetRecords({budget : data.budget}) );
             
         } catch (error) {
-            
-        }
+            const status = error.response?.status;
+            const message = error.response?.data?.msg || error.message || 'Unexpected error';
 
-    } 
+            if (status === 404 && message === "No budget found for this user.") {
+                dispatch(onClearBudget());
+            } else {
+              dispatch(onError(message));
+              setTimeout(() => dispatch(onclearError()), 10);
+            }
+        }
+    }
 
     //------------------------------------------------------------------------------
     const createBudget = async (income) => {
@@ -37,8 +43,12 @@ export const useBudgetStore = () => {
             dispatch(onGetRecords({ budget: data.budget }));
 
         } catch (error) {
-            console.error("Error creating budget:", error);
-            //despachar error message al usuario 
+            dispatch(onError(
+                error.response?.data?.msg || error.message || 'Error creating budget'
+            ));
+            setTimeout( () => {
+                dispatch( onclearError() );
+            }, 10 );
         }
 
     }
@@ -52,8 +62,12 @@ export const useBudgetStore = () => {
             dispatch(onClearBudget());
             
         } catch (error) {
-            console.error("Error deleting budget:", error);
-            //despachar error message al usuario 
+            dispatch(onError(
+                error.response?.data?.msg || error.message || 'Error deleting budget'
+            ));
+            setTimeout( () => {
+                dispatch( onclearError() );
+            }, 10 );
         }
     }
 
@@ -71,7 +85,12 @@ export const useBudgetStore = () => {
             dispatch(onGetRecords({ budget: data.budget }));
             
         } catch (error) {
-            console.error("Error adding record:", error);
+            dispatch(onError(
+                error.response?.data?.msg || error.message || 'Error adding record'
+            ));
+            setTimeout( () => {
+                dispatch( onclearError() );
+            }, 10 );
         }
     };
 
@@ -84,7 +103,12 @@ export const useBudgetStore = () => {
 
             dispatch(onUpdateRecord(data.updatedBudget));
         } catch (error) {
-            console.error("Error updating record:", error);            
+            dispatch(onError(
+                error.response?.data?.msg || error.message || 'Error updating record'
+            ));
+            setTimeout( () => {
+                dispatch( onclearError() );
+            }, 10 );         
         }
     }
 
@@ -99,7 +123,12 @@ export const useBudgetStore = () => {
             
             dispatch(onGetRecords({ budget: data.budget }));
         } catch (error) {
-            console.error("Error deleting record:", error);
+            dispatch(onError(
+                error.response?.data?.msg || error.message || 'Error deleting record'
+            ));
+            setTimeout( () => {
+                dispatch( onclearError() );
+            }, 10 );
         }
     }
 
@@ -110,6 +139,7 @@ export const useBudgetStore = () => {
         budget,
         records : budget ? budget.records : [],
         isLoading,
+        errorMessage,
 
         // Methods
         getRecords,

@@ -1,48 +1,38 @@
-import {
-  Modal,
-  Table,
-  GreenCircularButton,
-  FormAddDesc,
-  BudgetModal,
-  BudgetSummaryCard,
-} from ".";
+import { Modal, Table, GreenCircularButton, FormAddDesc, BudgetModal, BudgetSummaryCard } from ".";
+import { useConfirmAction } from "../../hooks/useConfirmAction";
 import { useBudgetStore } from "../../hooks";
 import { useEffect, useState } from "react";
 import { useForm } from "../hooks/useForm";
 import Swal from "sweetalert2";
-import { Trash2 } from 'lucide-react';
 
 import "./budgetLayout.css";
 
 export const BudgetLayout = () => {
-  const {
-    budget,
-    records,
-    getRecords,
-    deleteBudget,
-    addRecord,
-    updateRecord,
-    deleteRecord,
-  } = useBudgetStore();
 
+  //Hooks
+  const { budget, records, errorMessage, getRecords, deleteBudget, addRecord, updateRecord, deleteRecord } = useBudgetStore();
+  const { confirmAndRun, isLoading } = useConfirmAction();
   const { formState, description, amount, onSubmit, onInputChange } = useForm(
     { description: "", amount: "" },
     addRecord
   );
-
+  // useSate
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const [currentRow, setCurrentRow] = useState(null);
-
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
-
+  //Modals Handlers
   const closeBudgetModal = () => setIsBudgetModalOpen(false);
-
   const closeModal = () => setIsModalOpen(false);
 
   useEffect(() => {
     getRecords();
   }, []);
+
+  useEffect(() => {
+    if ( errorMessage !== undefined ) {
+      Swal.fire('Oops... Something Went Wrong', errorMessage, 'error');
+    }
+  }, [errorMessage])
 
   const calculateTotalSpent = () => {
     return records.reduce((total, item) => total + item.amount, 0);
@@ -56,12 +46,8 @@ export const BudgetLayout = () => {
 
   // Función para guardar los cambios en la fila editada
   const handleSave = (updatedItem) => {
-    const updateRow = {
-      description: updatedItem.description,
-      amount: parseInt(updatedItem.amount, 10),
-    };
-    handleUpdateItem(currentRow, updateRow);
-    closeModal(); // Cierra el modal
+    handleUpdateItem(currentRow, updatedItem);
+    closeModal(); // Close the modal
   };
 
   //--------------------------------------------------------------------------------------
@@ -93,40 +79,23 @@ export const BudgetLayout = () => {
     const recordToDelete = records[index];
     if (!recordToDelete || !recordToDelete._id) return;
 
-    const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "This will permanently delete this record.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, delete it!",
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-    });
+    await confirmAndRun ({
+      text: "This will permanently delete the item.",
+      successText: "Item deleted successfully.",
+      onConfirm: () => deleteRecord(recordToDelete._id),
 
-    if (result.isConfirmed) {
-      await deleteRecord(recordToDelete._id);
-      await Swal.fire("Deleted!", "Record has been deleted.", "success");
-    }
+    })
   };
 
   //---------------------------------------------------------------------------------------
   const handleDeleteBudget = async () => {
     if (!budget?._id) return;
 
-    const result = await Swal.fire({
-      title: "Are you sure?",
+    await confirmAndRun({
       text: "This will permanently delete your budget and all its records.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, delete it!",
+      successText: "Your budget has been deleted.",
+      onConfirm: () => deleteBudget(budget._id),
     });
-
-    if (result.isConfirmed) {
-      await deleteBudget(budget._id);
-      await Swal.fire("Deleted!", "Your budget has been deleted.", "success");
-    }
   };
 
   //---------------------------------------------------------------------------------------
@@ -176,8 +145,14 @@ export const BudgetLayout = () => {
         <button 
           className="btn btn-outline-danger rounded-pill d-flex align-items-center gap-2 px-4"
           onClick={handleDeleteBudget}
+          disabled={isLoading}
         >
-          Delete Budget
+          {isLoading ? (
+            <>
+              <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              Deleting...
+            </>
+          ) : ( "Delete Budget")}
         </button>
       </div>
     </div>

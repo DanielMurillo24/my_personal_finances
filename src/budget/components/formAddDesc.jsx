@@ -1,4 +1,3 @@
-import { useBudgetStore } from "../../hooks";
 import { Input } from "./Input";
 
 export const FormAddDesc = ({onSubmit, onInputChange, description, amount}) => {

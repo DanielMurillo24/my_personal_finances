@@ -1,5 +1,6 @@
 import "./modal.css";
 import { Input } from "./Input";
+import { useAlert } from "../../hooks"; 
 import { useEffect, useState } from "react";
 
 export const Modal = ({ isOpen, description, amount, onClose, onSave }) => {
@@ -7,6 +8,8 @@ export const Modal = ({ isOpen, description, amount, onClose, onSave }) => {
     description: "",
     amount: "",
   });
+
+  const { showAlert } = useAlert();
 
   useEffect(() => {
     if (isOpen) {
@@ -24,9 +27,36 @@ export const Modal = ({ isOpen, description, amount, onClose, onSave }) => {
     });
   };
 
-  const onSubmit = (event) => {
-    event.preventDefault(); // Prevent page refresh on form submit
-    onSave(modalState); // Send the updated values back to the parent
+  const onSubmit = async (event) => {
+    event.preventDefault(); 
+
+    const description = modalState.description?.trim();
+    const amountStr = modalState.amount?.toString().trim();
+    const parsedAmount = Number(amountStr);
+
+    if (!description || !amountStr) {
+    await showAlert({
+      title: "Invalid Input",
+      text: "Values can not be empty",
+      icon: "warning",
+    });
+    return;
+  }
+
+  if (isNaN(parsedAmount) || parsedAmount <= 0) {
+    await showAlert({
+      title: "Invalid Input",
+      text: "Please enter a valid positive number.",
+      icon: "error",
+    });
+    return;
+  }
+
+  onSave({
+    description,
+    amount: parsedAmount,
+  });
+  
   };
 
   if (!isOpen) return null;

@@ -1,7 +1,8 @@
-import { useBudgetStore } from "../../hooks";
+import { useBudgetStore, useAlert } from "../../hooks";
 import { useState } from "react";
 import Modal from "react-modal";
 import { Input } from "./Input";
+
 
 const customStyles = {
   content: {
@@ -23,11 +24,20 @@ Modal.setAppElement("#root");
 
 export const BudgetModal = ({ isOpen, onCloseModal }) => {
   const { createBudget } = useBudgetStore();
+  const { showAlert } = useAlert();
 
   const [income, setIncome] = useState("");
 
   const handleCreate = async () => {
-    console.log("Created budget with income:", income);
+    if (!income){
+      await showAlert({
+        title: 'Invalid Input',
+        text: "Please enter a valid income",
+        icon: "error",
+      });
+      return;
+    }
+
     await createBudget(Number(income));
     setIncome("");
     onCloseModal();
