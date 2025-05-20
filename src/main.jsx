@@ -8,7 +8,7 @@ import { FinanceApp } from "./FinanceApp";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <HashRouter basename="/my_personal_finances">
+    <HashRouter>
       <FinanceApp/>
     </HashRouter>
   </React.StrictMode>
