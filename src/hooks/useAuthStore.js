@@ -16,7 +16,34 @@ export const useAuthStore = () => {
             dispatch( onLogin({ name: data.name, uid: data.uid }) )
 
         } catch (error) {
-            dispatch( onLogout( 'Wrong Credentials' ) )
+
+          
+
+          console.error('Login Error:', error);
+
+    if (error.response) {
+        console.log('Response status:', error.response.status);
+        console.log('Response data:', error.response.data);
+        
+        // Si el backend responde con 401, es un error de autenticación real
+        if (error.response.status === 401) {
+            dispatch(onLogout('Wrong Credentials'));
+        } else {
+            dispatch(onLogout('Server error. Please try again.'));
+        }
+    } else if (error.request) {
+        // No se recibió respuesta del servidor
+        console.log('No response from server');
+        dispatch(onLogout('No response from server.'));
+    } else {
+        // Otro tipo de error
+        console.log('Error', error.message);
+        dispatch(onLogout('Unexpected error occurred.'));
+    }
+
+
+
+          //  dispatch( onLogout( 'Wrong Credentials' ) )
             setTimeout( () => {
               dispatch( clearErrorMessage() );
             }, 10 );
