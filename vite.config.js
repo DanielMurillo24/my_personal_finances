@@ -6,5 +6,5 @@ export default defineConfig({
   build: {
     outDir: 'docs',  // Directorio donde se generará la build
   },
-  base: '/'
+  base: '/my_personal_finances/'
 })
