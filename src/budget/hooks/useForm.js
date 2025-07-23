@@ -1,7 +1,7 @@
 import { useAlert } from "../../hooks";
 import { useState } from "react";
 
-export const useForm = (initialForm = {}, onAddRecord) => {
+export const useForm = (initialForm = {}, onAddRecord, income = 0, totalSpent = 0) => {
 
   const [formState, setFormState] = useState(initialForm);
   const { showAlert } = useAlert(); 
@@ -9,12 +9,13 @@ export const useForm = (initialForm = {}, onAddRecord) => {
   const onSubmit = async (event) => {
     event.preventDefault();
 
-    const { description, amount } = formState;
+    const { description, amount, category } = formState;
 
     const desc = description?.trim();
     const amt = amount?.toString().trim();
+    const cat = category?.trim();
     
-    if (!desc || !amt){
+    if (!desc || !amt || !cat){
       await showAlert({
         title: 'Invalid Input',
         text: "Values can not be empty",
@@ -33,11 +34,21 @@ export const useForm = (initialForm = {}, onAddRecord) => {
     return;
     }
 
+    if ( totalSpent + convertedAmount > income) {
+      await showAlert({
+        title: "Budget Limit Exceeded",
+        text: "Adding this item would exceed your total budget.",
+        icon: "error",
+      });
+      return;
+    }  
+
     if (onAddRecord){
-      await onAddRecord(desc, convertedAmount);
+      await onAddRecord(desc, convertedAmount, cat);
       setFormState({
         description: "",
         amount: "",
+        category: "",
       });
     }
   };

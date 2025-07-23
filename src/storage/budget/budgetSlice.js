@@ -27,6 +27,13 @@ export const budgetSlice = createSlice({
             state.isLoading = false;
             state.errorMessage = undefined;
         },
+        onUpdateIncome: (state, { payload }) =>{
+            if (state.budget) {
+                state.budget.income = payload.income;
+            }
+            state.isLoading = false;
+            state.errorMessage = undefined;
+        },
         onError:(state, { payload }) => {
             state.isLoading = false;
             state.errorMessage = payload;
@@ -38,4 +45,4 @@ export const budgetSlice = createSlice({
     
 });
 
-export const { loadingRecords, onGetRecords, onClearBudget, onUpdateRecord, onError, onclearError} = budgetSlice.actions;
+export const { loadingRecords, onGetRecords, onClearBudget, onUpdateRecord, onUpdateIncome, onError, onclearError} = budgetSlice.actions;

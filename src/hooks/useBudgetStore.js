@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from "react-redux"
-import { loadingRecords, onGetRecords, onClearBudget, onUpdateRecord, onError, onclearError } from '../storage';
+import { loadingRecords, onGetRecords, onClearBudget, onUpdateRecord, onUpdateIncome, onError, onclearError } from '../storage';
 import financeApi from "../apis/financeApi";
 
 
@@ -73,13 +73,14 @@ export const useBudgetStore = () => {
 
     //------------------------------------------------------------------------------
 
-    const addRecord  = async (description, amount) => {
+    const addRecord  = async (description, amount, category) => {
         if (!budget?._id) return;
     
         try {
             const { data } = await financeApi.post(`/budget/${budget._id}/record`, {
                 description,
-                amount
+                amount, 
+                category
             });
     
             dispatch(onGetRecords({ budget: data.budget }));
@@ -134,6 +135,27 @@ export const useBudgetStore = () => {
 
     //------------------------------------------------------------------------------
 
+    const updateIncome = async (newIncome) => {
+        if (!budget?._id) return;
+
+        try {
+            const { data } = await financeApi.put(`/budget/${budget._id}`, {
+              income: newIncome,
+            });
+
+            dispatch(onUpdateIncome({income: data.updatedBudget.income}));
+            
+        } catch (error) {
+            dispatch(onError(
+              error.response?.data?.msg || error.message || 'Error updating income'
+            ));
+            setTimeout( () => {
+                dispatch( onclearError() );
+            }, 10 );
+        }
+
+    }
+
     return{
         // Properties
         budget,
@@ -147,6 +169,7 @@ export const useBudgetStore = () => {
         deleteBudget,
         addRecord,
         updateRecord,
-        deleteRecord
+        deleteRecord,
+        updateIncome
     }
 }

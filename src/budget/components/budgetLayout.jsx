@@ -1,7 +1,7 @@
 import { Modal, Table, GreenCircularButton, FormAddDesc, BudgetModal, BudgetSummaryCard } from ".";
-import { useConfirmAction } from "../../hooks/useConfirmAction";
-import { useBudgetStore } from "../../hooks";
+import { useBudgetStore, useConfirmAction, useCategoryStore } from "../../hooks";
 import { useEffect, useState } from "react";
+import { Trash2 } from "lucide-react";
 import { useForm } from "../hooks/useForm";
 import Swal from "sweetalert2";
 
@@ -12,20 +12,36 @@ export const BudgetLayout = () => {
   //Hooks
   const { budget, records, errorMessage, getRecords, deleteBudget, addRecord, updateRecord, deleteRecord } = useBudgetStore();
   const { confirmAndRun, isLoading } = useConfirmAction();
-  const { formState, description, amount, onSubmit, onInputChange } = useForm(
-    { description: "", amount: "" },
-    addRecord
-  );
+  const {categories, getCategories, categoryErrorMessage} = useCategoryStore();
+
+  const calculateTotalSpent = () => {
+    return records.reduce((total, item) => total + item.amount, 0);
+  };
+
+  //Variables
+  const totalSpent = calculateTotalSpent();
+  const income = budget?.income || 0;
+  const isBudgetFull = totalSpent >= income;
+
+  const { description, amount, category, onSubmit, onInputChange } = useForm({ description: "", amount: "" , category: ""}, addRecord, income, totalSpent );
+
   // useSate
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentRow, setCurrentRow] = useState(null);
+  const [currentItem, setCurrentItem] = useState(null);
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
   //Modals Handlers
   const closeBudgetModal = () => setIsBudgetModalOpen(false);
-  const closeModal = () => setIsModalOpen(false);
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setCurrentItem(null);
+  } 
 
   useEffect(() => {
     getRecords();
+  }, []);
+
+  useEffect(() => {
+    getCategories();
   }, []);
 
   useEffect(() => {
@@ -34,55 +50,45 @@ export const BudgetLayout = () => {
     }
   }, [errorMessage])
 
-  const calculateTotalSpent = () => {
-    return records.reduce((total, item) => total + item.amount, 0);
-  };
-
-  const totalSpent = calculateTotalSpent();
-  const income = budget?.income || 0;
-  const remainingBalance = income - totalSpent;
+  useEffect(() => {
+  if (categoryErrorMessage !== undefined) {
+    Swal.fire('Oops... Category Error', categoryErrorMessage, 'error');
+  }
+}, [categoryErrorMessage]);
 
   //--------------------------------------------------------------------------------------
 
   // Función para guardar los cambios en la fila editada
   const handleSave = (updatedItem) => {
-    handleUpdateItem(currentRow, updatedItem);
+    if (!currentItem || !budget?._id || !currentItem._id) return;
+    handleUpdateItem(currentItem._id, updatedItem);
     closeModal(); // Close the modal
   };
 
   //--------------------------------------------------------------------------------------
 
   // Función para abrir el modal con la fila seleccionada
-  const handleEditClick = (index) => {
-    const item = records[index];
-    setCurrentRow(index);
+  const handleEditClick = (item) => {
+    setCurrentItem(item);
     setIsModalOpen(true);
   };
 
   //--------------------------------------------------------------------------------------
 
-  const handleUpdateItem = async (index, updatedData) => {
-    const itemToUpdate = records[index];
-    if (!itemToUpdate || !itemToUpdate._id) return;
-
-    const updatedRecord = {
-      ...itemToUpdate,
-      ...updatedData,
-    };
-
-    await updateRecord(budget._id, itemToUpdate._id, updatedRecord);
+  const handleUpdateItem = async (itemId, updatedData) => {
+    await updateRecord(budget._id, itemId, updatedData);
   };
 
   //---------------------------------------------------------------------------------------
 
-  const handleDeleteItem = async (index) => {
-    const recordToDelete = records[index];
-    if (!recordToDelete || !recordToDelete._id) return;
+  const handleDeleteItem = async (recordId) => {
+    const recordToDelete = records.find(r => r._id === recordId);
+    if (!recordToDelete) return;
 
     await confirmAndRun ({
       text: "This will permanently delete the item.",
       successText: "Item deleted successfully.",
-      onConfirm: () => deleteRecord(recordToDelete._id),
+      onConfirm: () => deleteRecord(recordId),
 
     })
   };
@@ -119,26 +125,33 @@ export const BudgetLayout = () => {
         onInputChange={onInputChange}
         description={description}
         amount={amount}
+        category={category}
+        categories={categories}
+        isDisabled={isBudgetFull}
       />
 
       <BudgetSummaryCard
         income={income}
         totalSpent={totalSpent}
-        remainingBalance={remainingBalance}
       />
 
       <Table
         items={records}
         onEdit={handleEditClick}
-        onDelete={(index) => handleDeleteItem(index)}
+        onDelete={(recordId) => handleDeleteItem(recordId)}
       />
 
       <Modal
         isOpen={isModalOpen}
-        description={records[currentRow]?.description || ""}
-        amount={records[currentRow]?.amount || ""}
+        description={currentItem?.description || ""}
+        amount={currentItem?.amount || ""}
+        category={currentItem?.category?._id || ""}
+        categories={categories}
         onClose={closeModal}
         onSave={handleSave}
+        income={income}
+        totalSpent={totalSpent}
+        originalAmount={currentItem?.amount || 0}
       />
 
       <div className="d-flex justify-content-end mt-5">
@@ -147,6 +160,7 @@ export const BudgetLayout = () => {
           onClick={handleDeleteBudget}
           disabled={isLoading}
         >
+          <Trash2 size={24}/>
           {isLoading ? (
             <>
               <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>

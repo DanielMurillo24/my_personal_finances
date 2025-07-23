@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom";
+import { AuthenticatedLayout } from "../layout/";
 import { useEffect } from "react";
 import { Navbar } from "../layout";
 import { HomePage } from "../home";
@@ -18,10 +19,7 @@ export const AppRouter = () => {
   }
 
   return (
-    <>
-      {status === "authenticated" && <Navbar />}
-
-      <Routes>
+    <Routes>
         {status === "non-authenticated" ? (
           <>
             <Route path="/auth/*" element={<LoginPage />} />
@@ -29,12 +27,14 @@ export const AppRouter = () => {
           </>
         ) : (
           <>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/" element={<AuthenticatedLayout/>}>
+            <Route index element={<HomePage />} />
             <Route path="/budget" element={<BudgetPage />} />
+            </Route>
+            
             <Route path="/*" element={<Navigate to="/" />} />
           </>
         )}
       </Routes>
-    </>
   );
 };

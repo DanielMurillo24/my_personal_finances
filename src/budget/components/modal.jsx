@@ -1,12 +1,25 @@
-import "./modal.css";
-import { Input } from "./Input";
-import { useAlert } from "../../hooks"; 
+import { Input, DropdownCategory } from ".";
+import { useAlert } from "../../hooks";
 import { useEffect, useState } from "react";
 
-export const Modal = ({ isOpen, description, amount, onClose, onSave }) => {
+import "./modal.css";
+
+export const Modal = ({
+  isOpen,
+  description,
+  amount,
+  category,
+  categories = [],
+  onClose,
+  onSave,
+  income,
+  totalSpent,
+  originalAmount = 0,
+}) => {
   const [modalState, setModalState] = useState({
     description: "",
     amount: "",
+    category: "",
   });
 
   const { showAlert } = useAlert();
@@ -16,9 +29,10 @@ export const Modal = ({ isOpen, description, amount, onClose, onSave }) => {
       setModalState({
         description: description || "",
         amount: amount || "",
+        category: category || "",
       });
     }
-  }, [isOpen, description, amount]);
+  }, [isOpen, description, amount, category]);
 
   const onInputChange = (name, value) => {
     setModalState({
@@ -28,80 +42,92 @@ export const Modal = ({ isOpen, description, amount, onClose, onSave }) => {
   };
 
   const onSubmit = async (event) => {
-    event.preventDefault(); 
+    event.preventDefault();
 
     const description = modalState.description?.trim();
     const amountStr = modalState.amount?.toString().trim();
     const parsedAmount = Number(amountStr);
+    const originalCategory = category || "";
+    const selectedCategory = modalState.category || originalCategory;
 
-    if (!description || !amountStr) {
-    await showAlert({
-      title: "Invalid Input",
-      text: "Values can not be empty",
-      icon: "warning",
-    });
-    return;
-  }
+    if (!description || !amountStr || !selectedCategory) {
+      await showAlert({
+        title: "Invalid Input",
+        text: "Values can not be empty",
+        icon: "warning",
+      });
+      return;
+    }
 
-  if (isNaN(parsedAmount) || parsedAmount <= 0) {
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      await showAlert({
+        title: "Invalid Input",
+        text: "Please enter a valid positive number.",
+        icon: "error",
+      });
+      return;
+    }
+
+    const newTotal = totalSpent - originalAmount + parsedAmount;
+
+    if (newTotal > income) {
     await showAlert({
-      title: "Invalid Input",
-      text: "Please enter a valid positive number.",
+      title: "Budget Exceeded",
+      text: "This change would exceed your total income.",
       icon: "error",
     });
     return;
   }
 
-  onSave({
-    description,
-    amount: parsedAmount,
-  });
-  
+    onSave({
+      description,
+      amount: parsedAmount,
+      category: selectedCategory,
+    });
   };
 
   if (!isOpen) return null;
 
   return (
     <div className="modal-overlay">
-      <div className="card shadow-sm rounded-4 p-4 modal-content">
-        <h2 className="card-header bg-light text-dark mb-4">Editing...</h2>
-        <form onSubmit={onSubmit}>
-          <div className="row g-2">
-            <div className="col-md-4">
-              <Input
-                className="form-control"
-                type="text"
-                placeholder="Description"
-                value={modalState.description}
-                onChange={(value) => onInputChange("description", value)}
-              />
-            </div>
-            <div className="col-md-4">
-              <Input
-                className="form-control"
-                type="number"
-                placeholder="Amount"
-                value={modalState.amount}
-                onChange={(value) => onInputChange("amount", value)}
-              />
-            </div>
+      <div className="modal-content card shadow-sm rounded-4 p-4">
+        <h2 className="modal-title">Edit Record</h2>
+        <form onSubmit={onSubmit} className="modal-form">
+          <Input
+            className="modal-input"
+            type="text"
+            placeholder="Description"
+            value={modalState.description}
+            onChange={(value) => onInputChange("description", value)}
+          />
 
-            <div className="col-md-4 d-flex gap-2">
-              <button
-                type="submit"
-                className="btn btn-outline-primary rounded-pill w-100"
-              >
-                Save
-              </button>
-              
-              <button
-                type="button"
-                onClick={onClose}
-                className="btn btn-outline-secondary rounded-pill w-100"
-              >
-                Cancel
-              </button>
-            </div>
+          <Input
+            className="modal-input"
+            type="number"
+            placeholder="Amount"
+            value={modalState.amount}
+            onChange={(value) => onInputChange("amount", value)}
+          />
+
+          <DropdownCategory
+            className="modal-dropdown"
+            categories={categories}
+            value={modalState.category}
+            onChange={(value) => onInputChange("category", value)}
+          />
+
+          <div className="modal-buttons">
+            <button type="submit" className="btn btn-primary btn-rounded">
+              Save
+            </button>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn btn-secondary btn-rounded"
+            >
+              Cancel
+            </button>
           </div>
         </form>
       </div>

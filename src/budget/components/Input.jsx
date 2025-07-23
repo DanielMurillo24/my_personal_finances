@@ -1,4 +1,4 @@
-export const Input = ({type, value = '', placeholder, onChange, className}) => {
+export const Input = ({type, value = '', placeholder, onChange, className, disabled = false,}) => {
 
   return (
     <input
@@ -7,6 +7,7 @@ export const Input = ({type, value = '', placeholder, onChange, className}) => {
     placeholder = { placeholder }
     value={ value }
     onChange={ (event) => onChange(event.target.value) }
+    disabled={disabled}
     />
   )
 };
